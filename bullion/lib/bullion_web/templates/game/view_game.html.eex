@@ -1,0 +1,6 @@
+<html>
+<body>
+<h2>Game <%= @shortcode %></h2>
+<h1>Players</h1>
+</body>
+</html>
