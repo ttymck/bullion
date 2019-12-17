@@ -1,6 +1,10 @@
 <html>
 <body>
-<h2>Game <%= @game.shortcode %></h2>
-<h1>Players</h1>
+<h2>Game: <%= @game.name %> - <%= @game.shortcode %></h2>
+<h2>Buyin: $<%= @game.buyin_dollars%> == <%= @game.buyin_chips %> chips</h2>
+<h2> Players </h2>
+<ul>
+  <li></li>
+</ul>
 </body>
 </html>

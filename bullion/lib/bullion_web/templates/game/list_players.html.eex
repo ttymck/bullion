@@ -1,0 +1,19 @@
+<html>
+<body>
+<h1>Players for Game <%= @game.shortcode %></h1>
+  <h2> Players </h2>
+  <ul>
+    <%= for player <- @game.players do %>
+      <li>
+        <%= player.name %> | <%= player.buyin_count%> buyins
+      </li>
+    <% end %>
+  </ul>
+  <%= form_for @conn, Routes.game_path(@conn, :add_player), [method: :post, as: :player], fn f -> %>
+    Name: <%= text_input f, :name %>
+    <%= hidden_input f, :game_id, value: @game.id%>
+    <%= submit "Add Player" %>
+  <% end %>
+  <%= link("Done Adding Players", to: Routes.game_path(@conn, :lookup, shortcode: @game.shortcode)) %>
+</body>
+</html>

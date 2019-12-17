@@ -13,7 +13,7 @@ defmodule Bullion.Player do
 
   def changeset(player, params \\ %{}) do
     player
-    |> Ecto.Changeset.cast(params, [:name, :buyin_count])
-    |> Ecto.Changeset.validate_required([:name, :buyin_count])
+    |> Ecto.Changeset.cast(params, [:name, :buyin_count, :game_id])
+    |> Ecto.Changeset.validate_required([:name, :buyin_count, :game_id])
   end
 end

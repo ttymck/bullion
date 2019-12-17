@@ -24,6 +24,7 @@ defmodule BullionWeb do
       import Plug.Conn
       import BullionWeb.Gettext
       alias BullionWeb.Router.Helpers, as: Routes
+      import BullionWeb.InputHelpers
     end
   end
 
@@ -42,6 +43,7 @@ defmodule BullionWeb do
       import BullionWeb.ErrorHelpers
       import BullionWeb.Gettext
       alias BullionWeb.Router.Helpers, as: Routes
+      import BullionWeb.InputHelpers
     end
   end
 

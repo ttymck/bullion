@@ -3,13 +3,18 @@ defmodule Bullion.Repo.Migrations.Init do
 
   def change do
     create table(:game) do
-      add :shortcode, :string
+      add :name, :string, null: false
       add :buyin_dollars, :integer
       add :buyin_chips, :integer
-      
       timestamps([type: :utc_datetime])
     end
 
-    create unique_index(:game, [:shortcode])
+    create table(:player) do
+      add :name, :string, null: false
+      add :game_id, references(:game)
+      add :buyin_count, :integer
+      timestamps([type: :utc_datetime])
+    end
+
   end
 end

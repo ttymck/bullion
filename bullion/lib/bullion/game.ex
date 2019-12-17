@@ -1,18 +1,51 @@
 defmodule Bullion.Game do
   use Ecto.Schema
-
+  import Ecto.Changeset
+  import Hashids
   @timestamps_opts [type: :utc_datetime]
 
+  @hashid_salt "28947"
+
   schema "game" do
-    field :shortcode, :string
+    field :name, :string
     field :buyin_dollars, :integer
     field :buyin_chips, :integer
+    field :shortcode, :string, virtual: true
+    has_many :players, Bullion.Player
     timestamps()
   end
 
-  def changeset(game, params \\ %{}) do
+  def changeset(game, %{} = params \\ %{}) do
     game
-    |> Ecto.Changeset.cast(params, [:shortcode, :buyin_dollars, :buyin_chips])
-    |> Ecto.Changeset.validate_required([:shortcode, :buyin_dollars, :buyin_chips])
+    |> cast(params, [:name, :buyin_dollars, :buyin_chips])
+    |> validate_required([:name, :buyin_dollars, :buyin_chips])
   end
+
+  def put_shortcode(game) do
+    %Bullion.Game{game | shortcode: shortcode_for_game(game)}
+  end
+
+  defp hashid() do
+    Hashids.new(
+      salt: @hashid_salt, 
+      alphabet: "abcdefghijklmnopqrstuvwxyz0123456789",
+      min_len: 6)
+  end
+
+  def id_for_shortcode(shortcode) do
+    hashid
+    |> Hashids.decode(shortcode)
+  end
+
+  def shortcode_for_id(id) do
+    {id, _} = Integer.parse(id)
+    hashid
+    |> Hashids.encode(id)
+  end
+
+  def shortcode_for_game(game) do 
+    hashid
+    |> Hashids.encode(game.id)
+  end
+
 end

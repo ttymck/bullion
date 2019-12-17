@@ -19,6 +19,9 @@ defmodule BullionWeb.Router do
     get "/", PageController, :index
 
     get "/game/new", GameController, :new
+    post "/game/create", GameController, :create
+    get "/game/list-players", GameController, :list_players
+    post "/game/add-player", GameController, :add_player
     get "/game/view", GameController, :lookup
   end
 
