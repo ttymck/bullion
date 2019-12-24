@@ -1,0 +1,10 @@
+<div class="btn white darken-4 col s10 m4">
+     <a href="/game/new" style="text-transform:none">
+         <h2>Start a Game</h2>
+     </a>
+
+    <%= form_for @conn, Routes.game_path(@conn, :lookup), [method: :get], fn f -> %>
+        <%= text_input f, :shortcode %>
+        <%= submit "Find Game" %>
+    <% end %>
+</div>

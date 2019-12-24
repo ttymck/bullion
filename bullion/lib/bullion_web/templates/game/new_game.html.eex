@@ -1,0 +1,11 @@
+<html>
+<body>
+<h1>Start New Game</h1>
+  <%= form_for @conn, Routes.game_path(@conn, :create), [method: :post, as: :new_game], fn f -> %>
+    Name: <%= text_input f, :name %>
+    Buyin Dollars <%= number_input f, :buyin_dollars %>
+    Buyin Chips <%= number_input f, :buyin_chips %>
+    <%= submit "Start Game" %>
+  <% end %>
+</body>
+</html>

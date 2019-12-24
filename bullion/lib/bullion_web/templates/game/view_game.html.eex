@@ -1,0 +1,28 @@
+<html>
+<body>
+<h2><%= @game.name %></h2>
+<h3>game id: <%= @game.shortcode %></h3>
+<h3>$<%= @game.buyin_dollars%> == <%= @game.buyin_chips %> chips</h3>
+<h3> Players </h3>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Buyin Count</th>
+    <th></th>
+    <th>Chips Outstanding</th>
+    <th></th>
+    <th>Balance</th>
+  </tr>
+  <%= for player <- @game.players do %>
+    <tr>
+      <td><%= player.name %></td>
+      <td><%= player.buyin_count %>
+      <td><%= button("Buyin", to: Routes.player_path(@conn, :add_buyin, player.id, game_id: @game.id)) %></td>
+      <td><%= (player.buyin_count * @game.buyin_chips) - Enum.reduce(player.cashouts, 0, fn(cashout, acc) -> cashout.chip_count + acc end) %></td>
+      <td><%= button("Cash Out", to: Routes.player_path(@conn, :cash_out, player.id), method: :get) %></td>
+      <td><%= ((player.buyin_count * @game.buyin_chips) - Enum.reduce(player.cashouts, 0, fn(cashout, acc) -> cashout.chip_count + acc end)) * (@game.buyin_dollars / @game.buyin_chips) %></td>
+    </tr>
+  <% end %>
+</table>
+</body>
+</html>

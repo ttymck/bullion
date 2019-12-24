@@ -1,0 +1,5 @@
+<h1>Cash Out: <%= @player.name %></h1>
+<%= form_for @conn, Routes.player_path(@conn, :cash_out, @player.id), [method: :post], fn f -> %>
+  Chip Count: <%= number_input f, :chip_count %>
+  <%= submit "Cash Out" %>
+<% end %>
