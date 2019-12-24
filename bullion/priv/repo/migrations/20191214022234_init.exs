@@ -16,5 +16,11 @@ defmodule Bullion.Repo.Migrations.Init do
       timestamps([type: :utc_datetime])
     end
 
+    create table(:cash_out) do
+      add :player_id, :integer, null: false
+      add :chip_count, :integer, null: false
+      timestamps([type: :utc_datetime])
+    end
+
   end
 end

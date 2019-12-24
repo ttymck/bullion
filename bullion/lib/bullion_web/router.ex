@@ -23,6 +23,11 @@ defmodule BullionWeb.Router do
     get "/game/list-players", GameController, :list_players
     post "/game/add-player", GameController, :add_player
     get "/game/view", GameController, :lookup
+
+    post "/player/:player_id/buyin", PlayerController, :add_buyin
+
+    get "/player/:player_id/cashout", PlayerController, :cash_out
+    post "/player/:player_id/cashout", PlayerController, :cash_out
   end
 
   # Other scopes may use custom stacks.

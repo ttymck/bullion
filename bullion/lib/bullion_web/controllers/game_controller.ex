@@ -5,6 +5,7 @@ defmodule BullionWeb.GameController do
   alias Bullion.Game
   alias BullionWeb.Endpoint
   alias Bullion.Player
+  alias BullionWeb.Router.Helpers, as: Routes
 
   def new(conn, _params) do
     conn
@@ -18,7 +19,7 @@ defmodule BullionWeb.GameController do
         {:ok, game} -> 
           conn 
           |> fn c ->
-            redirect(c, to: BullionWeb.Router.Helpers.game_path(Endpoint, :list_players, shortcode: Game.put_shortcode(game).shortcode)) 
+            redirect(c, to: Routes.game_path(Endpoint, :list_players, shortcode: Game.put_shortcode(game).shortcode)) 
           end.()
         {:error, error} -> 
           conn
@@ -27,25 +28,29 @@ defmodule BullionWeb.GameController do
       end
   end
 
- def list_players(conn, %{"shortcode" => shortcode}) do
-   case get_game_by_shortcode(shortcode) do
-      {:error, _} -> conn
-        |> put_flash(:info, "Game not found for shortcode '#{shortcode}'")
-        |> redirect(to: "/")
-      {:ok, game} -> conn
-        |> assign(:game, game)
-        |> render("list_players.html")
-    end
- end
+  def list_players(conn, %{"shortcode" => shortcode}) do
+    case get_game_by_shortcode(shortcode) do
+       {:error, _} -> conn
+         |> put_flash(:info, "Game not found for shortcode '#{shortcode}'")
+         |> redirect(to: "/")
+       {:ok, game} -> list_players(conn, game)
+     end
+  end
 
-def add_player(conn, %{"player" => %{"game_id" => game_id, "name" => name}}) do  
-  %Player{}
-  |> Player.changeset(%{name: name, game_id: Integer.parse(game_id), buyin_count: 0})
-  |> Repo.insert
+  def list_players(conn, game = %Game{}) do
+     conn  
+     |> assign(:game, game)
+     |> render("list_players.html")
+  end
 
-  conn
-  |> redirect(to: BullionWeb.Router.Helpers.game_path(Endpoint, :list_players, shortcode: Game.shortcode_for_id(game_id)))
-end
+  def add_player(conn, %{"player" => %{"game_id" => game_id, "name" => name}}) do  
+    %Player{}
+    |> Player.changeset(%{name: name, game_id: game_id, buyin_count: 0})
+    |> Repo.insert
+
+    conn
+    |> redirect(to: BullionWeb.Router.Helpers.game_path(Endpoint, :list_players, shortcode: Game.shortcode_for_id(game_id)))
+  end
 
  defp get_game_by_shortcode(shortcode) do
     Game.id_for_shortcode(shortcode)
@@ -53,7 +58,7 @@ end
       {:ok, [id]} ->
         Game 
         |> Repo.get_by(id: id)
-        |> Repo.preload(:players)
+        |> Repo.preload([{:players, :cashouts}])
         |> case do
             nil -> {:error, :game_not_found}
             game -> {:ok, Game.put_shortcode(game)}

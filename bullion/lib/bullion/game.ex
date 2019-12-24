@@ -37,8 +37,12 @@ defmodule Bullion.Game do
     |> Hashids.decode(shortcode)
   end
 
-  def shortcode_for_id(id) do
+  def shortcode_for_id(id) when is_binary(id) do
     {id, _} = Integer.parse(id)
+    shortcode_for_id(id)
+  end
+
+  def shortcode_for_id(id) when is_number(id) do
     hashid
     |> Hashids.encode(id)
   end
