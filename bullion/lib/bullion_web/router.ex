@@ -22,7 +22,7 @@ defmodule BullionWeb.Router do
     post "/game/create", GameController, :create
     get "/game/list-players", GameController, :list_players
     post "/game/add-player", GameController, :add_player
-    get "/game/view", GameController, :lookup
+    get "/game/view", GameController, :view_game
 
     post "/player/:player_id/buyin", PlayerController, :add_buyin
 

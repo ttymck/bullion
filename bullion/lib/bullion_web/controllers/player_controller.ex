@@ -7,6 +7,7 @@ defmodule BullionWeb.PlayerController do
   alias Bullion.Player
   alias Bullion.CashOut
   alias BullionWeb.Router.Helpers, as: Routes
+  import Ecto.Query
 
   def add_buyin(conn, %{"player_id" => player_id, "game_id" => game_id}) do
     Player
@@ -17,16 +18,16 @@ defmodule BullionWeb.PlayerController do
           |> case do 
             {:ok , _} -> 
               conn
-              |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(game_id)))
+              |> redirect(to: Routes.game_path(conn, :view_game, admin_shortcode: Game.admin_shortcode_for_id(game_id)))
             {:error, error} -> 
               conn
               |> put_flash(:info, "unable to add buyin to player: #{error}")
-              |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(game_id)))
+              |> redirect(to: Routes.game_path(conn, :view_game, admin_shortcode: Game.admin_shortcode_for_id(game_id)))
           end
         nil -> 
           conn
           |> put_flash(:info, "unable to add buyin to player")
-          |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(game_id)))
+          |> redirect(to: Routes.game_path(conn, :view_game, admin_shortcode: Game.admin_shortcode_for_id(game_id)))
       end
   end
 
@@ -38,14 +39,17 @@ defmodule BullionWeb.PlayerController do
 
   def cash_out(conn, %{"player_id" => player_id, "chip_count" => chip_count}) do
     Player
-    |> Repo.get_by(id: player_id)
+    |> where([player], player.id == ^player_id)
+    |> join(:left, [p], _ in assoc(p, :game))
+    |> preload([player, game], [game: game])
+    |> Repo.one
     |> case do
       player ->
         %CashOut{}
         |> CashOut.changeset(%{chip_count: chip_count, player_id: player_id})
         |> Repo.insert
         conn 
-        |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(player.game_id)))
+        |> redirect(to: Routes.game_path(conn, :view_game, admin_shortcode: Game.admin_shortcode_for_id(player.game.id)))
       nil ->
         conn 
         |> put_flash(:info, "unable to cash out player")

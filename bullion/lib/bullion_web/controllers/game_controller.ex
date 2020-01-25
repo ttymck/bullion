@@ -6,6 +6,7 @@ defmodule BullionWeb.GameController do
   alias BullionWeb.Endpoint
   alias Bullion.Player
   alias BullionWeb.Router.Helpers, as: Routes
+  import Ecto.Query
 
   def new(conn, _params) do
     conn
@@ -19,7 +20,7 @@ defmodule BullionWeb.GameController do
         {:ok, game} -> 
           conn 
           |> fn c ->
-            redirect(c, to: Routes.game_path(Endpoint, :list_players, shortcode: Game.put_shortcode(game).shortcode)) 
+            redirect(c, to: Routes.game_path(Endpoint, :list_players, admin_shortcode: Game.put_shortcodes(game).admin_shortcode)) 
           end.()
         {:error, error} -> 
           conn
@@ -28,10 +29,10 @@ defmodule BullionWeb.GameController do
       end
   end
 
-  def list_players(conn, %{"shortcode" => shortcode}) do
-    case get_game_by_shortcode(shortcode) do
+  def list_players(conn, %{"admin_shortcode" => admin_shortcode}) do
+    case get_game_for_admin(admin_shortcode) do
        {:error, _} -> conn
-         |> put_flash(:info, "Game not found for shortcode '#{shortcode}'")
+         |> put_flash(:info, "Game not found for shortcode '#{admin_shortcode}'")
          |> redirect(to: "/")
        {:ok, game} -> list_players(conn, game)
      end
@@ -49,25 +50,51 @@ defmodule BullionWeb.GameController do
     |> Repo.insert
 
     conn
-    |> redirect(to: BullionWeb.Router.Helpers.game_path(Endpoint, :list_players, shortcode: Game.shortcode_for_id(game_id)))
+    |> redirect(to: BullionWeb.Router.Helpers.game_path(Endpoint, :list_players, admin_shortcode: Game.admin_shortcode_for_id(game_id)))
+  end
+
+  defp get_game_by_id(game_id) do
+    Game 
+    |> where([game], game.id == ^game_id)
+    |> join(:left, [g], _ in assoc(g, :players))
+    |> join(:left, [_, players], _ in assoc(players, :cashouts))
+    |> preload([game, players, cashouts], [players: {players, cashouts: cashouts}])
+    |> Repo.one
+    |> case do
+        nil -> {:error, :game_not_found}
+        game -> {:ok, Game.put_shortcode(game)}
+    end
   end
 
  defp get_game_by_shortcode(shortcode) do
     Game.id_for_shortcode(shortcode)
     |> case do 
-      {:ok, [id]} ->
-        Game 
-        |> Repo.get_by(id: id)
-        |> Repo.preload([{:players, :cashouts}])
-        |> case do
-            nil -> {:error, :game_not_found}
-            game -> {:ok, Game.put_shortcode(game)}
-        end
+      {:ok, [id]} -> get_game_by_id(id)
       _ -> {:error, :game_not_found}
     end
   end
 
-  def lookup(conn, %{"shortcode" => shortcode}) do
+  defp get_game_for_admin(admin_shortcode) do
+    Game.id_for_admin_shortcode(admin_shortcode)
+    |> case do
+        {:ok, [id]} -> 
+          get_game_by_id(id)
+          |> case do
+            {:ok, game} -> {:ok, Game.put_admin_shortcode(game)}
+            other -> other
+          end
+        _ -> {:error, :game_not_found}
+    end
+  end
+
+  def view_game(conn, %{"admin_shortcode" => admin_shortcode}) do
+    case get_game_for_admin(admin_shortcode) do
+      {:ok, game} -> conn |> assign(:game, game) |> render("admin_game.html", game: game)
+      {:error, _} -> conn |> put_flash(:info, "Game not found for shortcode '#{admin_shortcode}'") |> redirect(to: "/")
+    end
+  end
+
+  def view_game(conn, %{"shortcode" => shortcode}) do
     case get_game_by_shortcode(shortcode) do
       {:error, _} -> conn
         |> put_flash(:info, "Game not found for shortcode '#{shortcode}'")

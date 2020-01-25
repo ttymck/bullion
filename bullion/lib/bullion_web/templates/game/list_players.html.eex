@@ -1,6 +1,8 @@
 <html>
 <body>
-<h1>Players for Game <%= @game.shortcode %></h1>
+<h1>Players for Game</h1>
+  <h2>Admin Code:  <%= @game.admin_shortcode %></h2>
+  <h2>Read Only Code:  <%= @game.shortcode %></h2>
   <h2> Players </h2>
   <ul>
     <%= for player <- @game.players do %>
@@ -14,6 +16,10 @@
     <%= hidden_input f, :game_id, value: @game.id%>
     <%= submit "Add Player" %>
   <% end %>
-  <%= link("Done Adding Players", to: Routes.game_path(@conn, :lookup, shortcode: @game.shortcode)) %>
+  <%= 
+    link to: Routes.game_path(@conn, :view_game, admin_shortcode: @game.admin_shortcode) do
+      raw "<button>Done Adding Players</button>"
+    end
+  %>
 </body>
 </html>
