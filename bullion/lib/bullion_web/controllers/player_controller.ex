@@ -17,16 +17,16 @@ defmodule BullionWeb.PlayerController do
           |> case do 
             {:ok , _} -> 
               conn
-              |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(game_id)))
+              |> redirect(to: Routes.game_path(conn, :view_game, shortcode: Game.shortcode_for_id(game_id)))
             {:error, error} -> 
               conn
               |> put_flash(:info, "unable to add buyin to player: #{error}")
-              |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(game_id)))
+              |> redirect(to: Routes.game_path(conn, :view_game, shortcode: Game.shortcode_for_id(game_id)))
           end
         nil -> 
           conn
           |> put_flash(:info, "unable to add buyin to player")
-          |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(game_id)))
+          |> redirect(to: Routes.game_path(conn, :view_game, shortcode: Game.shortcode_for_id(game_id)))
       end
   end
 
@@ -45,7 +45,7 @@ defmodule BullionWeb.PlayerController do
         |> CashOut.changeset(%{chip_count: chip_count, player_id: player_id})
         |> Repo.insert
         conn 
-        |> redirect(to: Routes.game_path(conn, :lookup, shortcode: Game.shortcode_for_id(player.game_id)))
+        |> redirect(to: Routes.game_path(conn, :view_game, shortcode: Game.shortcode_for_id(player.game_id)))
       nil ->
         conn 
         |> put_flash(:info, "unable to cash out player")
