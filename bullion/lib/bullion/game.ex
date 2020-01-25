@@ -86,7 +86,7 @@ defmodule Bullion.Game do
   end
 
   def admin_shortcode_for_id(id) when is_number(id) do
-    hashid
+    admin_hashid
     |> Hashids.encode(id)
   end
 

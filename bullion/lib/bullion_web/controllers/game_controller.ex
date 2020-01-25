@@ -6,6 +6,7 @@ defmodule BullionWeb.GameController do
   alias BullionWeb.Endpoint
   alias Bullion.Player
   alias BullionWeb.Router.Helpers, as: Routes
+  import Ecto.Query
 
   def new(conn, _params) do
     conn
@@ -52,10 +53,13 @@ defmodule BullionWeb.GameController do
     |> redirect(to: BullionWeb.Router.Helpers.game_path(Endpoint, :list_players, admin_shortcode: Game.admin_shortcode_for_id(game_id)))
   end
 
-  defp get_game_by_id(id) do
+  defp get_game_by_id(game_id) do
     Game 
-    |> Repo.get_by(id: id)
-    |> Repo.preload([{:players, :cashouts}])
+    |> where([game], game.id == ^game_id)
+    |> join(:left, [g], _ in assoc(g, :players))
+    |> join(:left, [_, players], _ in assoc(players, :cashouts))
+    |> preload([game, players, cashouts], [players: {players, cashouts: cashouts}])
+    |> Repo.one
     |> case do
         nil -> {:error, :game_not_found}
         game -> {:ok, Game.put_shortcode(game)}
@@ -86,7 +90,7 @@ defmodule BullionWeb.GameController do
   def view_game(conn, %{"admin_shortcode" => admin_shortcode}) do
     case get_game_for_admin(admin_shortcode) do
       {:ok, game} -> conn |> assign(:game, game) |> render("admin_game.html", game: game)
-      {:error, _} -> conn |> put_flash(:info, "Game not found!") |> redirect(to: "/")
+      {:error, _} -> conn |> put_flash(:info, "Game not found for shortcode '#{admin_shortcode}'") |> redirect(to: "/")
     end
   end
 
