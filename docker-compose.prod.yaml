@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  web:
+    build: 
+      context: .
+      args:
+        mix_env: prod
+        secret_key: ${SECRET_KEY}
+        deps_postfix: "--only prod"
+    image: "bullion:0.1.0"
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4001
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+  db:
+    container_name: "bullion-db"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - bullion-db:/var/lib/postgresql/data
+    expose:
+      - "5432"
+volumes:
+  bullion-db:
+    driver: local

@@ -12,18 +12,18 @@ WORKDIR /app
 # By using --force, we don’t need to type “Y” to confirm the installation
 RUN mix local.hex --force
 
-# Compile the project
-ARG database_url
-ENV DATABASE_URL=${database_url}
-
 ARG secret_key
 ENV SECRET_KEY_BASE=${secret_key}
 
-ENV MIX_ENV prod 
-ENV PORT 4001
+ARG mix_env
+ENV MIX_ENV=${mix_env} 
+
 RUN mix local.rebar --force
-RUN mix deps.get --only prod
+ARG deps_postfix
+RUN mix deps.get ${deps_postfix}
 
 RUN mix do compile
+
+RUN mix phx.digest
 
 CMD mix phx.server
